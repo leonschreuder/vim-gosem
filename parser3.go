@@ -16,19 +16,25 @@ func init() {
 	fileNamePtr = flag.String("f", "", "Filename to parse")
 }
 
-	//TODO: method parameters from ast
+//TODO: method parameters from ast
 
 func main() {
 	file := getFileFromArgs()
 
+	var groups []string
+
 	fields := getFieldsFromFile(file)
-    method := getVarsFromFile(file)
+	groups = append(groups, strings.Join(fields, " "))
 
-    fieldString := strings.Join(fields, " ")
-    varString := strings.Join(method.variables, " ")
-    methodString := fmt.Sprintf("%d,%d,%s", method.bodyStart, method.bodyEnd, varString)
+	methods := getVarsFromFile(file)
+	for _, currentMethod := range methods {
+		varString := strings.Join(currentMethod.variables, " ")
+		methodString := fmt.Sprintf("%d,%d,%s", currentMethod.bodyStart, currentMethod.bodyEnd, varString)
 
-	fmtPrintf("%s|%s", fieldString, methodString)
+		groups = append(groups, methodString)
+	}
+
+	fmtPrintf(strings.Join(groups, "|"))
 }
 
 func getFileFromArgs() string {
@@ -67,19 +73,20 @@ type method struct {
 	variables []string //a list of variables
 }
 
-func getVarsFromFile(file string) method {
+func getVarsFromFile(file string) []method {
 	fset := token.NewFileSet() // positions are relative to fset
-	m := method{}
+	var ms []method
 
 	f, err := parser.ParseFile(fset, file, nil, 0)
 	if err != nil {
 		fmt.Println(err)
-		return m
+		return ms
 	}
 
 	for _, declaration := range f.Decls {
 		//Function declarations
 		if funcDecl, isFuncDecl := declaration.(*ast.FuncDecl); isFuncDecl {
+			m := method{}
 			// fmt.Printf("fu: %q\n", funcDecl)
 
 			startingPostition := fset.Position(funcDecl.Pos())
@@ -92,13 +99,16 @@ func getVarsFromFile(file string) method {
 				// fmt.Printf("methodStatement: %q\n", methodStatement)
 				if assignStmt, isAssignment := methodStatement.(*ast.AssignStmt); isAssignment {
 					for _, itemLeftOfAssignment := range assignStmt.Lhs {
+						// fmt.Printf("itemLeftOfAssignment: %q\n", itemLeftOfAssignment)
 						if variable, isVarIdent := itemLeftOfAssignment.(*ast.Ident); isVarIdent {
+							// fmt.Printf("variable: %q\n", variable)
 							m.variables = append(m.variables, variable.Name)
 						}
 					}
 				}
 			}
+			ms = append(ms, m)
 		}
 	}
-	return m
+	return ms
 }

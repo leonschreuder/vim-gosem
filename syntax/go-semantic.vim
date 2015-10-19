@@ -12,27 +12,50 @@ function! HighlightFields()
 ruby << EOR
 
 cb = VIM::Buffer.current
-
-# Calling go from shell for res
-
 cwd = VIM::evaluate("s:script_folder_path")
 
-parserOut = `go run C:/progs_manual/cygwin64#{cwd}../parser3.go -f #{cb.name}`
-puts parserOut
-#splitResult = parserOut.split("|")
-#fields = splitResult[0]
-#
-#methodSplit = splitResult[1].split(",")
-#
-#startLineNo = methodSplit[0]
-#endLineNo = methodSplit[1]
-#vars = methodSplit[2]
-#
-## adding fields to highlight group
-## VIM.command( 'syn match goFields "\<' + fields + '\>"')
-#VIM.command( "syn keyword goFields #{fields}")
-#
-#VIM.command("syn region firstMethod start=\"^#{cb[startLineNo]}\" end=\"^#{cb[endLineNo]}\""
+# Parsing the file
+parserOut = `go run #{cwd}../parser3.go -f #{cb.name}`
+groups = parserOut.split("|")
+variableGroup = groups[0]
+methodGroups = groups[1..-1]
+
+
+# Highlighting the fields
+if variableGroup.length > 0
+    VIM.command( "syn keyword goFields #{variableGroup}")
+end
+
+
+
+# Highlighting the method variables
+methodGroups.each { |methodGroup|
+    methodGroupSplit = methodGroup.split(",")
+    startLineNo = methodGroupSplit[0].to_i
+    endLineNo = methodGroupSplit[1].to_i
+
+    methodVariables = methodGroupSplit[2]
+    startLine = cb[startLineNo].gsub(/\[|\]/){|m|"\\" + m}
+    endLine = cb[endLineNo]
+    regionName = "method_on_line_" + startLineNo.to_s
+    varGroupName = "vars_for_" + regionName
+
+
+    # Highlighting variables as keywords
+    VIM.command( "syn keyword #{varGroupName} #{methodVariables} contained")
+
+
+    # Making a region to contain the highlights
+    VIM.command(
+        "syn region #{regionName}" +
+        " start=\"^#{startLine}\"" +
+        " end=\"^#{endLine}\"" +
+        " contains=#{varGroupName}" +
+        (variableGroup.length > 0 ? ",goFields" : "") # Only add fields if we have some
+        )
+
+    VIM.command( "hi def link     #{varGroupName}     Statement")
+}
 
 EOR
 endfunction
@@ -50,7 +73,7 @@ hi def link     goFields         Function
 " occurrenc will mark the end of the highlight group
 
 " syn region firstMethod start="^func Test_main(" end="^}"
-hi def link     firstMethod     Function
+" hi def link     goVars     Statement
 
 
 

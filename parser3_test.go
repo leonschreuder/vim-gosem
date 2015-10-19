@@ -9,18 +9,10 @@ import (
 var originalArgs []string
 var mockOut []string // output is written to this var (reset in every func)
 
-func addToArgs(args ...string) {
-	originalArgs = os.Args
-	os.Args = append(os.Args, args...)
-}
-func resetArgs() {
-	os.Args = originalArgs
-}
-
 func Test_main(t *testing.T) {
 	addToArgs("-f=input.go")
 	defer resetArgs()
-	expectedOut := "someFieldToPrint someOtherField|8,13,stringToPrint"
+	expectedOut := "someFieldToPrint someOtherField|8,16,stringToPrint a b|18,21,a"
 	initMockPrinter()
 
 	main()
@@ -61,22 +53,33 @@ func Test_gettingVariableName(t *testing.T) {
 }
 
 func Test_getMethodVarsFromFile(t *testing.T) {
-	expectedMethod := method{
-		bodyStart: 8,
-		bodyEnd:   13,
-		variables: []string{"stringToPrint"},
+	expectedMethods := []method{
+		method{
+			bodyStart: 8,
+			bodyEnd:   16,
+			variables: []string{"stringToPrint", "a", "b"},
+		},
+		method{
+			bodyStart: 18,
+			bodyEnd:   21,
+			variables: []string{"a"},
+		},
 	}
 
-	methodFound := getVarsFromFile("input.go")
+	methodsFound := getVarsFromFile("input.go")
 
-	if methodFound.bodyStart != expectedMethod.bodyStart {
-		t.Errorf("Expected method to start at line  %d, but got line %d", expectedMethod.bodyStart, methodFound.bodyStart)
-	}
-	if methodFound.bodyEnd != expectedMethod.bodyEnd {
-		t.Errorf("Expected method to end at line  %d, but got line %d", expectedMethod.bodyEnd, methodFound.bodyEnd)
-	}
-	if methodFound.variables[0] != expectedMethod.variables[0] {
-		t.Errorf("Expected method to have var %q, but had %q", expectedMethod.variables[0], methodFound.variables[0])
+	for i, cMethod := range methodsFound {
+		if cMethod.bodyStart != expectedMethods[i].bodyStart {
+			t.Errorf("Expected method to start at line  %d, but got line %d", expectedMethods[i].bodyStart, cMethod.bodyStart)
+		}
+		if cMethod.bodyEnd != expectedMethods[i].bodyEnd {
+			t.Errorf("Expected method to end at line  %d, but got line %d", expectedMethods[i].bodyEnd, cMethod.bodyEnd)
+		}
+		for j, cVar := range cMethod.variables {
+			if cVar != expectedMethods[i].variables[j] {
+				t.Errorf("Expected method to have var %q, but had %q", expectedMethods[i].variables[j], cVar)
+			}
+		}
 	}
 }
 
@@ -90,4 +93,12 @@ func mockPrintf(unformattedString string, a ...interface{}) (n int, err error) {
 func initMockPrinter() {
 	fmtPrintf = mockPrintf
 	mockOut = []string{}
+}
+
+func addToArgs(args ...string) {
+	originalArgs = os.Args
+	os.Args = append(os.Args, args...)
+}
+func resetArgs() {
+	os.Args = originalArgs
 }
