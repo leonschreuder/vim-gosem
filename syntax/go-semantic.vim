@@ -5,6 +5,7 @@
 " let s:preRunWindowState = winsaveview()
 
 
+let s:script_folder_path = escape( expand( '<sfile>:p:h' ), '\' ) . '/'
 
 
 function! HighlightFields()
@@ -13,13 +14,25 @@ ruby << EOR
 cb = VIM::Buffer.current
 
 # Calling go from shell for res
-fields = `go run ~/go/src/leonmoll.de/vim-gosem/parser3.go -f #{cb.name}`
 
-# puts "fields: " + fields
+cwd = VIM::evaluate("s:script_folder_path")
 
-# adding fields to highlight group
-# VIM.command( 'syn match goFields "\<' + fields + '\>"')
-VIM.command( "syn keyword goFields #{fields}")
+parserOut = `go run C:/progs_manual/cygwin64#{cwd}../parser3.go -f #{cb.name}`
+puts parserOut
+#splitResult = parserOut.split("|")
+#fields = splitResult[0]
+#
+#methodSplit = splitResult[1].split(",")
+#
+#startLineNo = methodSplit[0]
+#endLineNo = methodSplit[1]
+#vars = methodSplit[2]
+#
+## adding fields to highlight group
+## VIM.command( 'syn match goFields "\<' + fields + '\>"')
+#VIM.command( "syn keyword goFields #{fields}")
+#
+#VIM.command("syn region firstMethod start=\"^#{cb[startLineNo]}\" end=\"^#{cb[endLineNo]}\""
 
 EOR
 endfunction
@@ -37,7 +50,7 @@ hi def link     goFields         Function
 " occurrenc will mark the end of the highlight group
 
 " syn region firstMethod start="^func Test_main(" end="^}"
-" hi def link     firstMethod     Function
+hi def link     firstMethod     Function
 
 
 

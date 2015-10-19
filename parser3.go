@@ -16,12 +16,19 @@ func init() {
 	fileNamePtr = flag.String("f", "", "Filename to parse")
 }
 
+	//TODO: method parameters from ast
+
 func main() {
 	file := getFileFromArgs()
+
 	fields := getFieldsFromFile(file)
-	//TODO: output variables for highlighting
-	//TODO: method parameters from ast
-	fmtPrintf(strings.Join(fields, " "))
+    method := getVarsFromFile(file)
+
+    fieldString := strings.Join(fields, " ")
+    varString := strings.Join(method.variables, " ")
+    methodString := fmt.Sprintf("%d,%d,%s", method.bodyStart, method.bodyEnd, varString)
+
+	fmtPrintf("%s|%s", fieldString, methodString)
 }
 
 func getFileFromArgs() string {

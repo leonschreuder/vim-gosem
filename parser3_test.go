@@ -20,7 +20,7 @@ func resetArgs() {
 func Test_main(t *testing.T) {
 	addToArgs("-f=input.go")
 	defer resetArgs()
-	expectedOut := "someFieldToPrint someOtherField"
+	expectedOut := "someFieldToPrint someOtherField|8,13,stringToPrint"
 	initMockPrinter()
 
 	main()
