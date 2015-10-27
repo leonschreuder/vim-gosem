@@ -84,31 +84,61 @@ func getVarsFromFile(file string) []method {
 	}
 
 	for _, declaration := range f.Decls {
-		//Function declarations
 		if funcDecl, isFuncDecl := declaration.(*ast.FuncDecl); isFuncDecl {
-			m := method{}
-			// fmt.Printf("fu: %q\n", funcDecl)
-
-			startingPostition := fset.Position(funcDecl.Pos())
-			m.bodyStart = startingPostition.Line
-
-			endingPostition := fset.Position(funcDecl.End())
-			m.bodyEnd = endingPostition.Line
-
-			for _, methodStatement := range funcDecl.Body.List {
-				// fmt.Printf("methodStatement: %q\n", methodStatement)
-				if assignStmt, isAssignment := methodStatement.(*ast.AssignStmt); isAssignment {
-					for _, itemLeftOfAssignment := range assignStmt.Lhs {
-						// fmt.Printf("itemLeftOfAssignment: %q\n", itemLeftOfAssignment)
-						if variable, isVarIdent := itemLeftOfAssignment.(*ast.Ident); isVarIdent {
-							// fmt.Printf("variable: %q\n", variable)
-							m.variables = append(m.variables, variable.Name)
-						}
-					}
-				}
-			}
+			m := traverseFunction(fset, funcDecl)
 			ms = append(ms, m)
 		}
 	}
 	return ms
+}
+
+func traverseFunction(fset *token.FileSet, funcDecl *ast.FuncDecl) method {
+	m := method{}
+
+	// ast.Print(fset, methodStatement)
+
+	startingPostition := fset.Position(funcDecl.Pos())
+	m.bodyStart = startingPostition.Line
+
+	endingPostition := fset.Position(funcDecl.End())
+	m.bodyEnd = endingPostition.Line
+	m.variables = getVariablesFromMethod(funcDecl.Body)
+	return m
+}
+
+func getVariablesFromMethod(methodBlock *ast.BlockStmt) []string {
+	var allVars []string
+	for _, methodStatement := range methodBlock.List {
+		if decl, isDecl := methodStatement.(*ast.DeclStmt); isDecl {
+			allVars = append(allVars, getVariablesFromDeclStmt(decl)...)
+		}
+		if assignStmt, isAssignment := methodStatement.(*ast.AssignStmt); isAssignment {
+			allVars = append(allVars, getVariablesFromAssignStmt(assignStmt)...)
+		}
+	}
+	return allVars
+}
+
+func getVariablesFromAssignStmt(assignStmt *ast.AssignStmt) []string {
+	var vars []string
+	for _, itemLeftOfAssignment := range assignStmt.Lhs {
+		if variable, isVarIdent := itemLeftOfAssignment.(*ast.Ident); isVarIdent {
+			vars = append(vars, variable.Name)
+		}
+	}
+	return vars
+}
+
+func getVariablesFromDeclStmt(decl *ast.DeclStmt) []string {
+	var vars []string
+	if genDecl, isGenDecl := decl.Decl.(*ast.GenDecl); isGenDecl {
+		for _, s := range genDecl.Specs {
+			if value, isValueSpec := s.(*ast.ValueSpec); isValueSpec {
+				for _, ident := range value.Names {
+					vars = append(vars, ident.Name)
+				}
+			}
+		}
+	}
+	return vars
 }

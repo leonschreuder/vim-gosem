@@ -75,6 +75,38 @@ func Test_getMethodVarsFromFile(t *testing.T) {
 		if cMethod.bodyEnd != expectedMethods[i].bodyEnd {
 			t.Errorf("Expected method to end at line  %d, but got line %d", expectedMethods[i].bodyEnd, cMethod.bodyEnd)
 		}
+		if len(cMethod.variables) != len(expectedMethods[i].variables) {
+			t.Fatalf("Expected %d items, got %d. Items: %q", len(expectedMethods[i].variables), len(cMethod.variables), cMethod.variables)
+		}
+		for j, cVar := range cMethod.variables {
+			if cVar != expectedMethods[i].variables[j] {
+				t.Errorf("Expected method to have var %q, but had %q", expectedMethods[i].variables[j], cVar)
+			}
+		}
+	}
+}
+
+func Test_multipleVariableTypes(t *testing.T) {
+	expectedMethods := []method{
+		method{
+			bodyStart: 5,
+			bodyEnd:   10,
+			variables: []string{"typedVariable", "compilerTypedVar"},
+		},
+	}
+
+	methodsFound := getVarsFromFile("input2.go")
+
+	for i, cMethod := range methodsFound {
+		if cMethod.bodyStart != expectedMethods[i].bodyStart {
+			t.Errorf("Expected method to start at line  %d, but got line %d", expectedMethods[i].bodyStart, cMethod.bodyStart)
+		}
+		if cMethod.bodyEnd != expectedMethods[i].bodyEnd {
+			t.Errorf("Expected method to end at line  %d, but got line %d", expectedMethods[i].bodyEnd, cMethod.bodyEnd)
+		}
+		if len(cMethod.variables) != len(expectedMethods[i].variables) {
+			t.Fatalf("Expected %d items, got %d. Items: %q", len(expectedMethods[i].variables), len(cMethod.variables), cMethod.variables)
+		}
 		for j, cVar := range cMethod.variables {
 			if cVar != expectedMethods[i].variables[j] {
 				t.Errorf("Expected method to have var %q, but had %q", expectedMethods[i].variables[j], cVar)
