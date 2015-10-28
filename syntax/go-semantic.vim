@@ -35,14 +35,14 @@ methodGroups.each { |methodGroup|
     endLineNo = methodGroupSplit[1].to_i
 
     methodVariables = methodGroupSplit[2]
-    startLine = cb[startLineNo].gsub(/\[|\]/){|m|"\\" + m}
+    startLine = cb[startLineNo].gsub(/\[|\]|\*/){|m|"\\" + m}
     endLine = cb[endLineNo]
     regionName = "method_on_line_" + startLineNo.to_s
     varGroupName = "vars_for_" + regionName
 
 
     # Highlighting variables as keywords
-    VIM.command( "syn keyword #{varGroupName} #{methodVariables} contained")
+    VIM.command("syn keyword #{varGroupName} #{methodVariables} contained")
 
 
     # Making a region to contain the highlights
@@ -52,7 +52,8 @@ methodGroups.each { |methodGroup|
         " end=\"^#{endLine}\"" +
         " contains=#{varGroupName}" +
         (variableGroup.length > 0 ? ",goFields" : "") # Only add fields if we have some
-        )
+    )
+        
 
     VIM.command( "hi def link     #{varGroupName}     Statement")
 }
