@@ -98,7 +98,16 @@ methodGroups.each { |methodGroup|
             "#{varGroupName}," +
             (variableGroup.length > 0 ? "goFields," : "") + # Only add fields if we have some
             "goString," + 
-            "goRawString"
+            "goRawString," +
+            "goComment," +
+            "goTodo," +
+            "goEscapeOctal," +
+            "goEscapeC," +
+            "goEscapeX," +
+            "goEscapeU," +
+            "goEscapeBigU," +
+            "goSpecialString," +
+            "goEscapeError"
     )
         
 
