@@ -11,6 +11,7 @@ import (
 
 var fmtPrintf = fmt.Printf
 var fileNamePtr *string
+var fset *token.FileSet
 
 func init() {
 	fileNamePtr = flag.String("f", "", "Filename to parse")
@@ -74,7 +75,7 @@ type method struct {
 }
 
 func getVarsFromFile(file string) []method {
-	fset := token.NewFileSet() // positions are relative to fset
+	fset = token.NewFileSet() // positions are relative to fset
 	var ms []method
 
 	f, err := parser.ParseFile(fset, file, nil, 0)
@@ -111,8 +112,7 @@ func getVariablesFromMethod(methodBlock *ast.BlockStmt) []string {
 	for _, methodStatement := range methodBlock.List {
 		if decl, isDecl := methodStatement.(*ast.DeclStmt); isDecl {
 			allVars = append(allVars, getVariablesFromDeclStmt(decl)...)
-		}
-		if assignStmt, isAssignment := methodStatement.(*ast.AssignStmt); isAssignment {
+		} else if assignStmt, isAssignment := methodStatement.(*ast.AssignStmt); isAssignment {
 			allVars = append(allVars, getVariablesFromAssignStmt(assignStmt)...)
 		}
 	}

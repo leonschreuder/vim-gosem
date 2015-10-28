@@ -2,6 +2,9 @@ package main
 
 import (
 	"fmt"
+	"go/ast"
+	"go/parser"
+	"go/token"
 	"os"
 	"testing"
 )
@@ -32,6 +35,36 @@ func Test_parsingAStringFlag(t *testing.T) {
 	if stringResult != inputString {
 		t.Errorf("Should parsed a flag with value %q, but got %q", inputString, stringResult)
 	}
+}
+
+func Test_gettingVariablesFromMethod(t *testing.T) {
+	source := `
+package main
+func main() {
+	var typedVariable string
+	compilerTypedVar := "printed"
+}`
+	expectedVars := []string{"typedVariable", "compilerTypedVar"}
+
+	// ast.Print(fset, fun.Body)
+	funStmt, _ := parseSource(source).Decls[0].(*ast.FuncDecl)
+
+	returnedVars := getVariablesFromMethod(funStmt.Body)
+
+	if len(returnedVars) != len(expectedVars) {
+		t.Errorf("Fields expected %d, got %d ", len(expectedVars), len(returnedVars))
+	}
+	for i, cField := range expectedVars {
+		if cField != returnedVars[i] {
+			t.Errorf("Expected field %q, got %q ", cField, returnedVars[i])
+		}
+	}
+}
+
+func parseSource(src string) *ast.File {
+	fset = token.NewFileSet() // positions are relative to fset
+	f, _ := parser.ParseFile(fset, "", src, 0)
+	return f
 }
 
 func Test_gettingVariableName(t *testing.T) {
