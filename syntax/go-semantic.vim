@@ -5,6 +5,50 @@
 " let s:preRunWindowState = winsaveview()
 
 
+" Comments; their contents
+syn keyword     goTodo              contained TODO FIXME XXX BUG
+syn cluster     goCommentGroup      contains=goTodo
+syn region      goComment           start="/\*" end="\*/" contains=@goCommentGroup,@Spell
+syn region      goComment           start="//" end="$" contains=@goCommentGroup,@Spell
+
+hi def link     goComment           Comment
+hi def link     goTodo              Todo
+
+" Go escapes
+syn match       goEscapeOctal       display contained "\\[0-7]\{3}"
+syn match       goEscapeC           display contained +\\[abfnrtv\\'"]+
+syn match       goEscapeX           display contained "\\x\x\{2}"
+syn match       goEscapeU           display contained "\\u\x\{4}"
+syn match       goEscapeBigU        display contained "\\U\x\{8}"
+syn match       goEscapeError       display contained +\\[^0-7xuUabfnrtv\\'"]+
+
+hi def link     goEscapeOctal       goSpecialString
+hi def link     goEscapeC           goSpecialString
+hi def link     goEscapeX           goSpecialString
+hi def link     goEscapeU           goSpecialString
+hi def link     goEscapeBigU        goSpecialString
+hi def link     goSpecialString     Special
+hi def link     goEscapeError       Error
+
+" Strings and their contents
+syn cluster     goStringGroup       contains=goEscapeOctal,goEscapeC,goEscapeX,goEscapeU,goEscapeBigU,goEscapeError
+syn region      goString            start=+"+ skip=+\\\\\|\\"+ end=+"+ contains=@goStringGroup
+syn region      goRawString         start=+`+ end=+`+
+
+hi def link     goString            String
+hi def link     goRawString         String
+
+" Characters; their contents
+syn cluster     goCharacterGroup    contains=goEscapeOctal,goEscapeC,goEscapeX,goEscapeU,goEscapeBigU
+syn region      goCharacter         start=+'+ skip=+\\\\\|\\'+ end=+'+ contains=@goCharacterGroup
+
+hi def link     goCharacter         Character
+
+"--------------------------------------------------------------------------------
+" Above is copied from go.vim
+"--------------------------------------------------------------------------------
+
+
 let s:script_folder_path = escape( expand( '<sfile>:p:h' ), '\' ) . '/'
 
 
@@ -50,8 +94,11 @@ methodGroups.each { |methodGroup|
         "syn region #{regionName}" +
         " start=\"^#{startLine}\"" +
         " end=\"^#{endLine}\"" +
-        " contains=#{varGroupName}" +
-        (variableGroup.length > 0 ? ",goFields" : "") # Only add fields if we have some
+        " contains=" +
+            "#{varGroupName}," +
+            (variableGroup.length > 0 ? "goFields," : "") + # Only add fields if we have some
+            "goString," + 
+            "goRawString"
     )
         
 
@@ -60,7 +107,6 @@ methodGroups.each { |methodGroup|
 
 EOR
 endfunction
-
 call HighlightFields()
 
 
@@ -75,9 +121,6 @@ hi def link     goFields         Function
 
 " syn region firstMethod start="^func Test_main(" end="^}"
 " hi def link     goVars     Statement
-
-
-
 
 
 " Reset the cursor position to prevent jumping around
