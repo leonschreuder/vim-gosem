@@ -5,6 +5,7 @@ import (
 	"go/ast"
 	"go/parser"
 	"go/token"
+	// "leonmoll.de/testutils"
 	"os"
 	"testing"
 )
@@ -12,16 +13,22 @@ import (
 var originalArgs []string
 var mockOut []string // output is written to this var (reset in every func)
 
+func setup() {
+}
+
+func teardown() {
+}
+
 func Test_main(t *testing.T) {
 	addToArgs("-f=input.go")
 	defer resetArgs()
-	expectedOut := "someFieldToPrint someOtherField|8,16,stringToPrint a b|18,21,a"
 	initMockPrinter()
+	expected := "someFieldToPrint someOtherField|8,16,stringToPrint a b|18,21,a"
 
 	main()
 
-	if mockOut[0] != expectedOut {
-		t.Errorf("Expected %q, got %q", expectedOut, mockOut[0])
+	if mockOut[0] != expected {
+		t.Errorf("\nExpected: %q\nGot     : %q", expected, mockOut[0])
 	}
 }
 

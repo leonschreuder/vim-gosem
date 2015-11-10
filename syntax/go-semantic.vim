@@ -49,6 +49,7 @@ hi def link     goCharacter         Character
 "--------------------------------------------------------------------------------
 
 
+
 let s:script_folder_path = escape( expand( '<sfile>:p:h' ), '\' ) . '/'
 
 
@@ -69,7 +70,6 @@ methodGroups = groups[1..-1]
 if variableGroup.length > 0
     VIM.command( "syn keyword goFields #{variableGroup}")
 end
-
 
 
 # Highlighting the method variables
@@ -97,7 +97,7 @@ methodGroups.each { |methodGroup|
         " contains=" +
             "#{varGroupName}," +
             (variableGroup.length > 0 ? "goFields," : "") + # Only add fields if we have some
-            "goString," + 
+            "goString," +
             "goRawString," +
             "goComment," +
             "goTodo," +
@@ -109,7 +109,7 @@ methodGroups.each { |methodGroup|
             "goSpecialString," +
             "goEscapeError"
     )
-        
+
 
     VIM.command( "hi def link     #{varGroupName}     Statement")
 }
