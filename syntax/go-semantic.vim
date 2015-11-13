@@ -30,6 +30,13 @@ hi def link     goEscapeBigU        goSpecialString
 hi def link     goSpecialString     Special
 hi def link     goEscapeError       Error
 
+syn match       goTestMethod        "\sTest_"
+hi def link     goTestMethod        Todo
+" hi def link     goTestMethod        Todo      " To close to variable
+" hi def link     goTestMethod        Type      "Not strong enough
+" hi def link     goTestMethod        Error     "To strong
+" hi def link     goTestMethod        Underlined " to close to variable
+
 " Strings and their contents
 syn cluster     goStringGroup       contains=goEscapeOctal,goEscapeC,goEscapeX,goEscapeU,goEscapeBigU,goEscapeError
 syn region      goString            start=+"+ skip=+\\\\\|\\"+ end=+"+ contains=@goStringGroup
@@ -60,7 +67,7 @@ cb = VIM::Buffer.current
 cwd = VIM::evaluate("s:script_folder_path")
 
 # Parsing the file
-parserOut = `go run #{cwd}../parser3.go -f #{cb.name}`
+parserOut = `#{cwd}../vim-gosem -f #{cb.name}`
 groups = parserOut.split("|")
 variableGroup = groups[0]
 methodGroups = groups[1..-1]
@@ -107,9 +114,9 @@ methodGroups.each { |methodGroup|
             "goEscapeU," +
             "goEscapeBigU," +
             "goSpecialString," +
+            "goTestMethod," +
             "goEscapeError"
     )
-
 
     VIM.command( "hi def link     #{varGroupName}     Statement")
 }
@@ -120,6 +127,8 @@ call HighlightFields()
 
 
 " highlight named group specified with 'syn keyword' or 'syn match'
+" hi def link     goFields         Todo
+" hi def link     goFields         Type
 hi def link     goFields         Function
 
 
