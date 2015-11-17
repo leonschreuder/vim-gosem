@@ -67,7 +67,7 @@ cb = VIM::Buffer.current
 cwd = VIM::evaluate("s:script_folder_path")
 
 # Parsing the file
-parserOut = `#{cwd}gosem -f #{cb.name}`
+parserOut = `gosem -f #{cb.name}`
 groups = parserOut.split("|")
 variableGroup = groups[0]
 methodGroups = groups[1..-1]
