@@ -53,7 +53,7 @@ Then put this in your vimrc...
 ... `source %` it, and open a go source file.
 
 
-[gosem]: www.github.com/meonlol/gosem
+[gosem]: https://github.com/meonlol/gosem
 [Pathogen]: https://github.com/tpope/vim-pathogen
 [vim-plug]: https://github.com/junegunn/vim-plug
 [NeoBundle]: https://github.com/Shougo/neobundle.vim
