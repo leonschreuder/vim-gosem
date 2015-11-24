@@ -21,7 +21,7 @@ gosem
 
 To get the syntax highlighting, you first need [gosem][]. Just `go get` it:
 
-    go get -u https://github.com/meonlol/gosem
+    go get -u github.com/meonlol/gosem
 
 This should just work. Ask aunt google to help you with your environment if it
 won't. You can test gosem by navigating to some go source file on the command
