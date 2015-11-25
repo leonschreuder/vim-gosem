@@ -68,58 +68,60 @@ cwd = VIM::evaluate("s:script_folder_path")
 
 # Parsing the file
 parserOut = `gosem -f #{cb.name}`
-groups = parserOut.split("|")
-variableGroup = groups[0]
-methodGroups = groups[1..-1]
+if parserOut.include?("|")
+
+    groups = parserOut.split("|")
+    variableGroup = groups[0]
+    methodGroups = groups[1..-1]
+
+    # Highlighting the fields
+    if variableGroup.length > 0
+        VIM.command( "syn keyword goFields #{variableGroup}")
+    end
 
 
-# Highlighting the fields
-if variableGroup.length > 0
-    VIM.command( "syn keyword goFields #{variableGroup}")
+    # Highlighting the method variables
+    methodGroups.each { |methodGroup|
+        methodGroupSplit = methodGroup.split(",")
+        startLineNo = methodGroupSplit[0].to_i
+        endLineNo = methodGroupSplit[1].to_i
+
+        methodVariables = methodGroupSplit[2]
+        startLine = cb[startLineNo].gsub(/\[|\]|\*/){|m|"\\" + m}
+        endLine = cb[endLineNo]
+        regionName = "method_on_line_" + startLineNo.to_s
+        varGroupName = "vars_for_" + regionName
+
+
+        # Highlighting variables as keywords
+        VIM.command("syn keyword #{varGroupName} #{methodVariables} contained")
+
+
+        # Making a region to contain the highlights
+        VIM.command(
+            "syn region #{regionName}" +
+            " start=\"^#{startLine}\"" +
+            " end=\"^#{endLine}\"" +
+            " contains=" +
+                "#{varGroupName}," +
+                (variableGroup.length > 0 ? "goFields," : "") + # Only add fields if we have some
+                "goString," +
+                "goRawString," +
+                "goComment," +
+                "goTodo," +
+                "goEscapeOctal," +
+                "goEscapeC," +
+                "goEscapeX," +
+                "goEscapeU," +
+                "goEscapeBigU," +
+                "goSpecialString," +
+                "goTestMethod," +
+                "goEscapeError"
+        )
+
+        VIM.command( "hi def link     #{varGroupName}     Statement")
+    }
 end
-
-
-# Highlighting the method variables
-methodGroups.each { |methodGroup|
-    methodGroupSplit = methodGroup.split(",")
-    startLineNo = methodGroupSplit[0].to_i
-    endLineNo = methodGroupSplit[1].to_i
-
-    methodVariables = methodGroupSplit[2]
-    startLine = cb[startLineNo].gsub(/\[|\]|\*/){|m|"\\" + m}
-    endLine = cb[endLineNo]
-    regionName = "method_on_line_" + startLineNo.to_s
-    varGroupName = "vars_for_" + regionName
-
-
-    # Highlighting variables as keywords
-    VIM.command("syn keyword #{varGroupName} #{methodVariables} contained")
-
-
-    # Making a region to contain the highlights
-    VIM.command(
-        "syn region #{regionName}" +
-        " start=\"^#{startLine}\"" +
-        " end=\"^#{endLine}\"" +
-        " contains=" +
-            "#{varGroupName}," +
-            (variableGroup.length > 0 ? "goFields," : "") + # Only add fields if we have some
-            "goString," +
-            "goRawString," +
-            "goComment," +
-            "goTodo," +
-            "goEscapeOctal," +
-            "goEscapeC," +
-            "goEscapeX," +
-            "goEscapeU," +
-            "goEscapeBigU," +
-            "goSpecialString," +
-            "goTestMethod," +
-            "goEscapeError"
-    )
-
-    VIM.command( "hi def link     #{varGroupName}     Statement")
-}
 
 EOR
 endfunction
