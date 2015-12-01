@@ -4,6 +4,11 @@
 " Save the cursor position to prevent jumping around
 " let s:preRunWindowState = winsaveview()
 
+if exepath('gosem') == ""
+    echo "Unable to highilght go source file, 'gosem' is not installed"
+    finish
+endif
+
 
 " Comments; their contents
 syn keyword     goTodo              contained TODO FIXME XXX BUG
